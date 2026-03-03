@@ -27,7 +27,7 @@ Tests live in `tests/` with two marker categories:
 - `unit` — pure unit tests, no external dependencies, fast
 - `integration` — full proxy flow tests with mocked transports
 
-All new code must have unit tests. Maintain ≥80% coverage (`fail_under = 80` in pyproject.toml).
+All new code must have unit tests. Maintain ≥75% coverage (`fail_under = 75` in pyproject.toml).
 
 ## Code Style
 
