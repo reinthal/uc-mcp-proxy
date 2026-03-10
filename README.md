@@ -2,19 +2,29 @@
 
 MCP stdio-to-Streamable-HTTP proxy with Databricks OAuth.
 
-Lets any MCP client that speaks **stdio** (e.g. Claude Desktop, Claude Code) connect to a remote **Streamable HTTP** MCP server hosted on Databricks Apps — handling OAuth authentication automatically.
+Lets any MCP client that speaks **stdio** (e.g. Claude Desktop, Claude Code) connect to any **Databricks MCP server** — Managed, External, or Apps — handling authentication automatically.
 
 ## Installation
 
 ```bash
 # Run directly (no install needed)
-uvx uc-mcp-proxy --url https://<workspace>.databricks.com/apps/<app>/mcp
+uvx uc-mcp-proxy --url <MCP_SERVER_URL>
 
 # Or install globally
 uv tool install uc-mcp-proxy
 ```
 
 Requires Python 3.10+.
+
+## Databricks MCP Server Types
+
+| Server Type | URL Pattern |
+|-------------|-------------|
+| **Managed MCP** (UC Functions, Vector Search, Genie, SQL) | `https://<workspace>/api/2.0/mcp/functions/{catalog}/{schema}` |
+| **External MCP** (GitHub, Google Drive, and others) | `https://<workspace>/api/2.0/mcp/external/{connection_name}` |
+| **Apps** (custom MCP servers) | `https://<workspace>.databricks.com/apps/<app>/mcp` |
+
+> **Apps require OAuth.** Use `--auth-type databricks-cli` when connecting to a Databricks App. Managed and External MCP servers also work with PAT and other auth types.
 
 ## Usage
 
@@ -30,7 +40,7 @@ Add to your MCP client configuration:
       "command": "uvx",
       "args": [
         "uc-mcp-proxy",
-        "--url", "https://<workspace>.databricks.com/apps/<app>/mcp"
+        "--url", "<MCP_SERVER_URL>"
       ]
     }
   }
@@ -56,16 +66,16 @@ uc-mcp-proxy --url <MCP_SERVER_URL> [--profile <DATABRICKS_PROFILE>] [--auth-typ
 3. Injects a fresh Databricks OAuth token on every HTTP request
 4. Bridges messages bidirectionally between the two transports
 
-## OAuth Authentication
+## Authentication
 
-Authentication is handled by the [Databricks SDK](https://docs.databricks.com/dev-tools/sdk-python.html), which supports multiple auth methods:
+Authentication is handled by the [Databricks SDK](https://docs.databricks.com/dev-tools/sdk-python.html). The SDK auto-detects the method, or you can force one with `--auth-type`.
 
-- **Databricks CLI** (`databricks-cli`) — uses tokens from `~/.databrickscfg`
-- **OAuth U2M** — browser-based login flow
-- **PAT** — personal access tokens
-- **Azure / GCP / AWS** — cloud-native identity
-
-The SDK auto-detects the method, or you can force one with `--auth-type`.
+| Auth type | Managed / External MCP | Apps MCP |
+|-----------|------------------------|----------|
+| `databricks-cli` — token from `~/.databrickscfg` | ✅ | ✅ recommended |
+| `pat` — personal access token | ✅ | ❌ not supported |
+| `oauth-m2m` — service principal | ✅ | ✅ |
+| OAuth U2M — browser-based login | ✅ | ✅ |
 
 ## Development
 
